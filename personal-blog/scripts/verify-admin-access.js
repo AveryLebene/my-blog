@@ -40,7 +40,16 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function main() {
   try {
-    const email = process.argv[2] || "joeyatteen@gmail.com";
+    const email =
+      process.argv[2] ||
+      process.env.ADMIN_EMAIL ||
+      process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+    if (!email) {
+      console.error(
+        "Pass email as first argument or set ADMIN_EMAIL / NEXT_PUBLIC_ADMIN_EMAIL in .env.local"
+      );
+      process.exit(1);
+    }
     console.log(`\nVerifying admin access for: ${email}\n`);
 
     // First check if user exists and get their ID

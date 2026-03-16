@@ -1,5 +1,6 @@
 import { createServerClient } from "@/app/supabase-server";
 import { NextResponse } from "next/server";
+import { getCorsOrigin } from "@/lib/cors";
 import { getReliableImageUrl } from "@/lib/server-image-utils";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -73,13 +74,7 @@ export async function GET(request: Request, context: any) {
     };
 
     // Use the modified post for the response
-
-    // Dynamically set CORS origin
-    const allowedOrigins = ["https://joeatteen.com", "http://localhost:5173"];
-    const origin = request.headers.get("origin");
-    const corsOrigin = allowedOrigins.includes(origin ?? "")
-      ? origin ?? "https://joeatteen.com"
-      : "https://joeatteen.com";
+    const corsOrigin = getCorsOrigin(request);
 
     return NextResponse.json(
       { post: postWithTags },
@@ -103,11 +98,7 @@ export async function GET(request: Request, context: any) {
 
 // Handle OPTIONS requests (for CORS preflight)
 export async function OPTIONS(request: Request) {
-  const allowedOrigins = ["https://joeatteen.com", "http://localhost:5173"];
-  const origin = request.headers.get("origin");
-  const corsOrigin = allowedOrigins.includes(origin ?? "")
-    ? origin ?? "https://joeatteen.com"
-    : "https://joeatteen.com";
+  const corsOrigin = getCorsOrigin(request);
 
   return NextResponse.json(
     {},

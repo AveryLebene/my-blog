@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { createBrowserClient } from "@/app/supabase-browser";
+import { isAuthorizedAdmin } from "@/lib/admin-auth";
 import { toast } from "sonner";
 import dynamic from "next/dynamic";
 
@@ -200,8 +201,7 @@ export default function LoginPage() {
           // PostgreSQL not found error
           console.log("Profile doesn't exist, creating new profile");
 
-          // Always make joeyatteen@gmail.com an admin
-          const isAdmin = userEmail.toLowerCase() === "joeyatteen@gmail.com";
+          const isAdmin = isAuthorizedAdmin(userEmail);
           console.log(
             `Setting admin status to: ${
               isAdmin ? "YES" : "NO"
@@ -233,7 +233,7 @@ export default function LoginPage() {
       }
 
       // Check if we need to update the profile
-      if (userEmail === "joeyatteen@gmail.com" && !profile.is_admin) {
+      if (isAuthorizedAdmin(userEmail) && !profile.is_admin) {
         console.log("Updating admin status for primary admin user");
 
         const { data: updatedProfile, error: updateError } = await supabase

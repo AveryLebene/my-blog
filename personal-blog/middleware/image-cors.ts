@@ -1,7 +1,6 @@
-"use client";
-
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getCorsOrigin } from "@/lib/cors";
 
 /**
  * Middleware that adds CORS headers specifically for Supabase image requests
@@ -29,12 +28,7 @@ export function middleware(request: NextRequest) {
   ) {
     console.log("Adding CORS headers to Supabase image request:", url);
 
-    // Determine allowed origins
-    const allowedOrigins = ["https://joeatteen.com", "http://localhost:5173"];
-    const origin = request.headers.get("origin");
-    const corsOrigin: string = allowedOrigins.includes(origin ?? "")
-      ? origin ?? "https://joeatteen.com"
-      : "https://joeatteen.com";
+    const corsOrigin = getCorsOrigin(request);
 
     // Get the response
     const response = NextResponse.next();

@@ -1,5 +1,6 @@
 import { createServerClient } from "@/app/supabase-server";
 import { NextResponse } from "next/server";
+import { getCorsHeaders } from "@/lib/cors";
 import { getReliableImageUrl } from "@/lib/server-image-utils";
 
 export async function GET(request: Request) {
@@ -137,19 +138,7 @@ export async function GET(request: Request) {
       },
       {
         headers: {
-          // Configure CORS headers to allow access from other domains
-          // Dynamically set CORS origin
-          ...(() => {
-            const allowedOrigins = [
-              "https://joeatteen.com",
-              "http://localhost:5173",
-            ];
-            const origin = request.headers.get("origin");
-            const corsOrigin = allowedOrigins.includes(origin ?? "")
-              ? origin ?? "https://joeatteen.com"
-              : "https://joeatteen.com";
-            return { "Access-Control-Allow-Origin": corsOrigin };
-          })(),
+          ...getCorsHeaders(request),
           "Access-Control-Allow-Methods": "GET, OPTIONS",
           "Access-Control-Allow-Headers": "Content-Type",
           "Cache-Control": "public, max-age=60", // Cache for 60 seconds
@@ -171,18 +160,7 @@ export async function OPTIONS(request: Request) {
     {},
     {
       headers: {
-        // Dynamically set CORS origin
-        ...(() => {
-          const allowedOrigins = [
-            "https://joeatteen.com",
-            "http://localhost:5173",
-          ];
-          const origin = request.headers.get("origin");
-          const corsOrigin = allowedOrigins.includes(origin ?? "")
-            ? origin ?? "https://joeatteen.com"
-            : "https://joeatteen.com";
-          return { "Access-Control-Allow-Origin": corsOrigin };
-        })(),
+        ...getCorsHeaders(request),
         "Access-Control-Allow-Methods": "GET, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
         "Access-Control-Max-Age": "86400", // 24 hours

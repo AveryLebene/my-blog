@@ -60,8 +60,17 @@ async function main() {
   try {
     console.log("Testing Supabase Profile Admin Status...");
 
-    // Get email from command line or use default
-    const testEmail = process.argv[2] || "joeyatteen@gmail.com";
+    // Get email from command line, env, or prompt to set
+    const testEmail =
+      process.argv[2] ||
+      process.env.ADMIN_EMAIL ||
+      process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+    if (!testEmail) {
+      console.error(
+        "Pass email as first argument or set ADMIN_EMAIL / NEXT_PUBLIC_ADMIN_EMAIL in .env.local"
+      );
+      process.exit(1);
+    }
     console.log(`\nChecking admin status for email: ${testEmail}`);
 
     console.log("Checking profiles table for email...");

@@ -36,17 +36,25 @@ if (!supabaseUrl || !supabaseKey) {
   process.exit(1);
 }
 
+const adminEmail = process.env.ADMIN_EMAIL ?? process.env.NEXT_PUBLIC_ADMIN_EMAIL;
+if (!adminEmail) {
+  console.error(
+    "Set ADMIN_EMAIL or NEXT_PUBLIC_ADMIN_EMAIL in .env.local (e.g. your-email@example.com)"
+  );
+  process.exit(1);
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 async function main() {
   try {
-    console.log("Finding profiles for joeyatteen@gmail.com...");
+    console.log(`Finding profiles for ${adminEmail}...`);
 
     // Use ilike for case-insensitive search
     const { data: profiles, error } = await supabase
       .from("profiles")
       .select("*")
-      .ilike("email", "%joeyatteen@gmail.com%");
+      .ilike("email", `%${adminEmail}%`);
 
     if (error) {
       console.error("Error fetching profiles:", error.message);
@@ -103,7 +111,7 @@ async function main() {
     console.log("\nChecking for auth users without profiles...");
 
     const { data: authDataUnsafe } = await supabase.auth.signInWithOtp({
-      email: "joeyatteen@gmail.com",
+      email: adminEmail,
       options: {
         shouldCreateUser: false,
       },

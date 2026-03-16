@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createBrowserClient } from "@/app/supabase-browser";
+import { isAuthorizedAdmin } from "@/lib/admin-auth";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -157,7 +158,7 @@ export default function FixTokensPage() {
             .insert({
               id: user.id,
               email: user.email,
-              is_admin: user.email.toLowerCase() === "joeyatteen@gmail.com",
+              is_admin: isAuthorizedAdmin(user.email ?? ""),
               created_at: new Date().toISOString(),
             })
             .select();
@@ -177,10 +178,7 @@ export default function FixTokensPage() {
       console.log("Profile found:", profile);
 
       // Ensure admin access for specific email
-      if (
-        user.email.toLowerCase() === "joeyatteen@gmail.com" &&
-        !profile.is_admin
-      ) {
+      if (user.email && isAuthorizedAdmin(user.email) && !profile.is_admin) {
         const { error: updateError } = await supabase
           .from("profiles")
           .update({ is_admin: true })
