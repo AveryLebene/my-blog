@@ -50,15 +50,6 @@ export function Header() {
             <ThemeToggle />
           </div>
 
-          {/* Admin access */}
-          <Button
-            asChild
-            variant="outline"
-            className="hidden sm:inline-flex mr-2"
-          >
-            <Link href="/admin">Admin Dashboard</Link>
-          </Button>
-
           <Button asChild variant="default" className="hidden sm:inline-flex">
             <Link href="/#newsletter">Subscribe</Link>
           </Button>

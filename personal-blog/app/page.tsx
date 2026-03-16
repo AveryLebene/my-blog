@@ -43,7 +43,7 @@ export default function Home() {
             </h1>
             <p className="animate-fade-in-up animation-delay-200 mt-6 text-xl text-muted-foreground">
               A personal corner of the web where I share my thoughts, ideas, and
-              discoveries.
+              discoveries. This blog will cover things outside of my day job as a software engineer.
             </p>
             <div className="animate-fade-in-up animation-delay-300 mt-10 flex flex-wrap justify-center gap-4">
               <Button asChild>

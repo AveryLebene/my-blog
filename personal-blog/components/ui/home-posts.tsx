@@ -145,13 +145,12 @@ export function HomePosts() {
                 className="bg-card rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
               >
                 {post.image_url && (
-                  <div className="aspect-video overflow-hidden">
+                  <div className="relative aspect-video w-full overflow-hidden">
                     <SupabaseImage
                       src={post.image_url}
                       alt={post.title}
-                      width={400}
-                      height={225}
-                      className="object-cover w-full h-full"
+                      fill
+                      className="object-cover"
                     />
                   </div>
                 )}

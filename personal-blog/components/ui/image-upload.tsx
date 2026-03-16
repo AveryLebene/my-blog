@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { UploadCloud, X, Loader2 } from "lucide-react";
 import { createBrowserClient } from "@/app/supabase-browser";
@@ -18,6 +18,7 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [bucketChecked, setBucketChecked] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const supabase = createBrowserClient();
 
   // Check if bucket exists on component mount
@@ -366,24 +367,25 @@ export function ImageUpload({ value, onChange }: ImageUploadProps) {
               </div>
             )}
             {error && <p className="text-xs text-destructive">{error}</p>}
-            <label htmlFor="image-upload" className="cursor-pointer">
-              <Button
-                type="button"
-                variant="outline"
-                disabled={isUploading}
-                className="mt-2"
-              >
-                Select Image
-              </Button>
-              <input
-                id="image-upload"
-                type="file"
-                accept="image/*"
-                className="sr-only"
-                onChange={handleFileUpload}
-                disabled={isUploading}
-              />
-            </label>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isUploading}
+              className="mt-2"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Select Image
+            </Button>
+            <input
+              ref={fileInputRef}
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={handleFileUpload}
+              disabled={isUploading}
+              aria-label="Upload image"
+            />
           </div>
         </div>
       )}
