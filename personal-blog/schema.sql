@@ -96,7 +96,7 @@ BEGIN
     new.email,
     new.email IN (
       -- List of admin emails - replace with actual admin emails
-      'joeyatteen@gmail.com'
+      'averylbrown@gmail.com'
     )
   );
   RETURN new;
