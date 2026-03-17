@@ -26,14 +26,17 @@ const emptyFeed = () => ({
 
 async function generate() {
   if (!supabaseUrl || !supabaseAnonKey) {
-    console.warn("generate-feed: Missing Supabase env, writing empty feed.");
+    console.warn("generate-feed: Missing Supabase env (NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY), writing empty feed.");
     writeFeed(emptyFeed());
     return;
   }
 
   const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
-  const { data: posts, error } = await supabase
+  // Fetch posts; if the tags join fails at build time, retry without it so we still get posts
+  let posts = [];
+
+  const { data: postsWithTags, error: errWithTags } = await supabase
     .from("posts")
     .select(
       `
@@ -54,13 +57,28 @@ async function generate() {
     .order("created_at", { ascending: false })
     .limit(MAX_POSTS);
 
-  if (error) {
-    console.warn("generate-feed: Supabase error, writing empty feed:", error.message);
-    writeFeed(emptyFeed());
-    return;
+  if (!errWithTags && postsWithTags?.length) {
+    posts = postsWithTags;
+  } else {
+    if (errWithTags) {
+      console.warn("generate-feed: Query with tags failed:", errWithTags.message, "- trying without tags.");
+    }
+    const { data: postsOnly, error: errOnly } = await supabase
+      .from("posts")
+      .select("id, title, slug, content, image_url, created_at, updated_at")
+      .eq("published", true)
+      .order("created_at", { ascending: false })
+      .limit(MAX_POSTS);
+
+    if (errOnly) {
+      console.warn("generate-feed: Supabase error, writing empty feed:", errOnly.message);
+      writeFeed(emptyFeed());
+      return;
+    }
+    posts = postsOnly || [];
   }
 
-  const processedPosts = (posts || []).map((post) => {
+  const processedPosts = posts.map((post) => {
     const excerpt = post.content
       ? post.content
           .replace(/\s+/g, " ")
@@ -94,6 +112,9 @@ async function generate() {
 
   writeFeed(feed);
   console.log("generate-feed: Wrote feed.json with", processedPosts.length, "posts.");
+  if (processedPosts.length === 0) {
+    console.warn("generate-feed: No posts found. Check Supabase RLS allows anon SELECT on posts where published=true, and env is set for Build (not only Runtime) in Vercel.");
+  }
 }
 
 function writeFeed(feed) {
