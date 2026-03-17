@@ -15,6 +15,7 @@ dotenv.config();
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const MAX_POSTS = 100;
+const BUCKET_NAME = process.env.NEXT_PUBLIC_STORAGE_BUCKET || "blog-images";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -23,6 +24,41 @@ const emptyFeed = () => ({
   posts: [],
   pagination: { total: 0, page: 1, limit: MAX_POSTS, totalPages: 0 },
 });
+
+/**
+ * Resolve DB image_url (path or full URL) to an absolute Supabase public URL
+ * so the portfolio (and feed consumers) can load images without hitting the blog origin.
+ */
+function resolveImageUrl(supabase, raw) {
+  if (!raw || typeof raw !== "string") return undefined;
+  const url = raw.trim();
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  let bucket = BUCKET_NAME;
+  let path = url;
+  if (url.startsWith("blog/") || url.startsWith("post-images/")) {
+    path = url;
+  } else if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[a-zA-Z]+$/i.test(url)) {
+    path = `blog/${url}`;
+  } else if (url.includes("/storage/v1/object/public/")) {
+    const match = url.match(/\/storage\/v1\/object\/public\/[^/]+\/(.+?)(?:\?|$)/);
+    if (match && match[1]) {
+      path = match[1];
+      const bucketMatch = url.match(/\/object\/public\/([^/]+)\//);
+      if (bucketMatch && bucketMatch[1]) bucket = bucketMatch[1];
+    }
+  } else if (url.includes("/")) {
+    const parts = url.split("/");
+    bucket = parts[0];
+    path = parts.slice(1).join("/");
+  }
+  if (!path) return undefined;
+  try {
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+    return data?.publicUrl || undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 async function generate() {
   if (!supabaseUrl || !supabaseAnonKey) {
@@ -94,7 +130,7 @@ async function generate() {
       title: post.title,
       slug: post.slug,
       excerpt,
-      image_url: post.image_url || undefined,
+      image_url: resolveImageUrl(supabase, post.image_url) ?? undefined,
       created_at: post.created_at,
       tags,
     };
